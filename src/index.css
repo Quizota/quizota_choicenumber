@@ -1,0 +1,19 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+.div__numberCircle{
+  border: 2px solid black;
+  border-radius: 100%;  
+  display: block;
+  padding: 10px;
+  text-align: center;
+}
+
+.div__numberCircle--selected{
+  display: block;
+  padding: 10px;
+  text-align: center;
+}
