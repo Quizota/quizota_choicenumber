@@ -8,13 +8,16 @@ class App extends Component {
   constructor(props, context){
     super(props, context)
 
+    this.renderNumber = this.renderNumber.bind(this)
+
     this.state = {showGame: false,
                   numberArray: [],
                   user: null,
+                  socket: socket
                  }
 
     socket.on('data', res => {
-        console.log(res)
+        // console.log(res)
 
         // If user join lobby
         if(res.code === 2){
@@ -23,35 +26,51 @@ class App extends Component {
         // If user join board
         } else if(res.code === 5){
           this.setState({showGame: true})
-          this.setState({numberArray: res.data.data})
 
+          var selection = []
+          let root = Math.floor(Math.sqrt(this.state.numberArray.length))
+
+          res.data.data.map(function(number, index){
+
+            var color = '#' + ("000000" + Math.random().toString(16).slice(2, 8).toUpperCase()).slice(-6);
+            selection.push({number: number,
+                            color: color,
+                            selected: false
+                          })      
+          })
+
+          this.setState({numberArray: selection})
         // If a user click on a number 
         } else if(res.code === 7){
           // If same username
           if(res.data.username === this.state.user.username){
             // Change child State
-            
+            this.numberSelected(res.data.pickNumber)
           }
         }
-        console.log(res.data)
+
+        // console.log(res.data)
     })
   }
 
-  
-  renderRow(rowData){
-    return(
-      <tr key={"tr_"+(temp++)}>
-        {rowData}
-      </tr>
-    )
-  }
+  numberSelected(number){
+    var arr = this.state.numberArray
 
-  onLoginClick(){
-      // let data = JSON.stringify({ "cmd": "autoRegister", "data": { "displayName": "phuong"} })
-      let data = JSON.stringify({ "cmd": "syncGameData", "data": {"cmd": "gameAction", "data": { "pickNumber": "1"} } })
-      socket.emit('data', data)
-  }
+    for (var i = 0; i < arr.length; i++) {
+      if(arr[i].number === number){
+        arr[i] = {  number: number,
+                    color: arr[i].color,
+                    selected: true
+                 }
+        break
+      }
+    }
 
+    // console.log("rerender")
+    this.setState({numberArray: arr})
+    console.log("New Array: ")
+    console.log(this.state.numberArray)
+}
   
   onPlayClick(){
       let data = JSON.stringify({ "cmd": "playNow", "data": {} })
@@ -61,52 +80,26 @@ class App extends Component {
   renderButton(){
       return (
       <div>
-        <button onClick={this.onLoginClick} id="login">Login</button>
         <button onClick={this.onPlayClick} id="play">Play</button>
       </div>
     )
   }
 
+
+  renderNumber(num){
+    return(
+      <li key={"li_"+num.number}>
+        <Number key={"number_"+num.number} selected={num.selected} number={num.number} color={num.color} socket={this.state.socket}/>
+      </li>
+    )
+  }
+
   renderGame(){
-    var temp = []
-    var selection = []
-    let root = Math.floor(Math.sqrt(this.state.numberArray.length))
-
-    this.state.numberArray.map(function(num, index){
-      if((++index % root) === 1){
-          selection.push(this.renderRow(temp))
-          temp = []
-      }
-
-        var color = '#' + ("000000" + Math.random().toString(16).slice(2, 8).toUpperCase()).slice(-6);
-        temp.push(<td key={"tr_"+num}>
-                    <Number key={"number_"+num} number={num} socket={socket} color={color}/>
-                  </td>)      
-    })
-
-    // for(var i = 1; i <= this.props.amount; i++){
-    //     if((i % root) === 1){
-    //       selection.push(this.renderRow(temp))
-    //       temp = []
-    //     }
-
-    //     // var color = randomColor[Math.floor(Math.random()*randomColor.length)]
-    //     var color = '#' + ("000000" + Math.random().toString(16).slice(2, 8).toUpperCase()).slice(-6);
-    //     temp.push(<td key={"td_"+i}><Number key={"number_"+i} number={i} color={color}/></td>)
-    // }
-
-    if(temp.length != 0){
-      selection.push(this.renderRow(temp))
-    }
-
     return (
       <div>
-        <table>
-          <tbody>
-            {selection}          
-          </tbody>
-        </table>
-        <button onClick={this.onLoginClick} id="login">Pick 1</button>
+        <ul className="ul__board">
+          {this.state.numberArray.map(this.renderNumber)}
+        </ul>
       </div>
     )
   }

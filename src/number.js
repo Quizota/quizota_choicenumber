@@ -7,17 +7,15 @@ class Number extends Component{
 
         this.handleSelected = this.handleSelected.bind(this)
 
-        this.state = {selected: false,
+        this.state = {selected: this.props.selected,
                       color: {borderColor: this.props.color,
-                          color: this.props.color}    
-                     }
+                              color: this.props.color}    
+        }
     }
 
-    handleSelected(){
-        console.log("clicked")
-        
-        this.setState({selected: true})
-        let data = JSON.stringify({ "cmd": "syncGameData", "data": {"cmd": "gameAction", "data": { "pickNumber": "1"} } })
+    handleSelected(){        
+        // this.setState({selected: true})
+        let data = JSON.stringify({ "cmd": "syncGameData", "data": {"cmd": "gameAction", "data": { "pickNumber": this.props.number} } })
         this.props.socket.emit('data', data)
     }
 
