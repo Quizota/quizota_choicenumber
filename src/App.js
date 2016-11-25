@@ -56,6 +56,7 @@ class App extends Component {
   numberSelected(number){
     var arr = this.state.numberArray
 
+    // Loop and update Object in array
     for (var i = 0; i < arr.length; i++) {
       if(arr[i].number === number){
         arr[i] = {  number: number,
@@ -67,6 +68,7 @@ class App extends Component {
     }
 
     // console.log("rerender")
+    this.setState({numberArray: []})
     this.setState({numberArray: arr})
     console.log("New Array: ")
     console.log(this.state.numberArray)
