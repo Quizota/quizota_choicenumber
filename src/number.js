@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import './index.css';
+import './index.css'
 
 class Number extends Component{
     constructor(props, context){

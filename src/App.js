@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Number from './number.js'
+import User from './User.js'
 import socket from './socket.js'
 // var randomColor = ["#d9fe60", "#e90b92", "#653ff9", "#00a829", "#a6267b", "#74796b", "#d954e9", "#64cefc", "#982c2e"]
 let temp = 0
@@ -13,17 +14,29 @@ class App extends Component {
     this.state = {showGame: false,
                   numberArray: [],
                   user: null,
+                  opponent: null,
+                  userScore: 0,
+                  opponentScore: 0,
                   socket: socket
                  }
 
     socket.on('data', res => {
-        // console.log(res)
 
         // If user join lobby
         if(res.code === 2){
           this.setState({user: res.data.profile})
 
-        // If user join board
+
+        // When opponent join board
+        } else if(res.code === 3){
+          this.setState({opponent: res.data.user})
+
+        } else if(res.code === 9){
+          if(res.data.user){
+            this.setState({opponent: res.data.user})
+          }
+
+        // When user join board, draw board
         } else if(res.code === 5){
           this.setState({showGame: true})
 
@@ -40,16 +53,25 @@ class App extends Component {
           })
 
           this.setState({numberArray: selection})
+
         // If a user click on a number 
         } else if(res.code === 7){
+ 
+          // Change child State
+          this.numberSelected(res.data.pickNumber)
+
+          // set score
           // If same username
-          if(res.data.username === this.state.user.username){
-            // Change child State
-            this.numberSelected(res.data.pickNumber)
-          }
+          if(res.data.userName === this.state.user.userName){
+            this.setState({userScore: res.data.score})
+          } else {
+            this.setState({opponentScore: res.data.score}) 
+         }
+
         }
 
-        // console.log(res.data)
+        console.log(res)
+        console.log(res.data)
     })
   }
 
@@ -96,12 +118,21 @@ class App extends Component {
     )
   }
 
+  renderUser(user, score){
+    return(
+      <User key={"user_"+user.userName} user={user} score={score}/> 
+    )
+  }
+
   renderGame(){
     return (
       <div>
         <ul className="ul__board">
           {this.state.numberArray.map(this.renderNumber)}
         </ul>
+
+        {this.renderUser(this.state.user, this.state.userScore)}
+        {this.renderUser(this.state.opponent, this.state.opponentScore)}
       </div>
     )
   }
